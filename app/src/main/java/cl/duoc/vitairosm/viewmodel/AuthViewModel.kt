@@ -27,16 +27,20 @@ class AuthViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
     fun actualizarNombre(valor: String) { nombre = valor }
 
     fun registrarUsuario() {
-        if (correo.isEmpty() || contrasena.isEmpty() || nombre.isEmpty()) {
+        val correoTrim = correo.trim()
+        val contrasenaTrim = contrasena.trim()
+        val nombreTrim = nombre.trim()
+
+        if (correoTrim.isEmpty() || contrasenaTrim.isEmpty() || nombreTrim.isEmpty()) {
             mensajeError = "Todos los campos son obligatorios"
             return
         }
         viewModelScope.launch {
-            val existe = usuarioDao.buscarPorCorreo(correo)
+            val existe = usuarioDao.buscarPorCorreo(correoTrim)
             if (existe != null) {
                 mensajeError = "El correo ya esta registrado"
             } else {
-                val nuevoUsuario = UsuarioEntity(nombre = nombre, correo = correo, contrasena = contrasena)
+                val nuevoUsuario = UsuarioEntity(nombre = nombreTrim, correo = correoTrim, contrasena = contrasenaTrim)
                 usuarioDao.registrarUsuario(nuevoUsuario)
                 mensajeError = "Registro exitoso"
             }
@@ -44,12 +48,15 @@ class AuthViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
     }
 
     fun iniciarSesion() {
-        if (correo.isEmpty() || contrasena.isEmpty()) {
+        val correoTrim = correo.trim()
+        val contrasenaTrim = contrasena.trim()
+
+        if (correoTrim.isEmpty() || contrasenaTrim.isEmpty()) {
             mensajeError = "Ingrese correo y contrasena"
             return
         }
         viewModelScope.launch {
-            val usuario = usuarioDao.iniciarSesion(correo, contrasena)
+            val usuario = usuarioDao.iniciarSesion(correoTrim, contrasenaTrim)
             if (usuario != null) {
                 usuarioLogueado = usuario
                 mensajeError = ""
