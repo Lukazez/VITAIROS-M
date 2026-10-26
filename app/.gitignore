@@ -1,0 +1,9 @@
+# Configuración local de Android Studio
+/.idea/
+
+# Archivos generados durante la compilación
+**/build/
+
+# Claves privadas de firma de Android
+*.jks
+*.keystore
