@@ -1,4 +1,3 @@
-
 package cl.duoc.vitairosm.ui.screens
 
 import androidx.compose.foundation.background
@@ -15,24 +14,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cl.duoc.vitairosm.viewmodel.CheckInViewModel
 
 @Composable
 fun CheckInScreen(
-    onVolver: () -> Unit,
-    onGuardar: (String, String, String) -> Unit
+    viewModel: CheckInViewModel,
+    onVolver: () -> Unit
 ) {
-    var animo by rememberSaveable {
-        mutableStateOf<String?>(null)
-    }
-
-    var categoria by rememberSaveable {
-        mutableStateOf("")
-    }
-
-    var nota by rememberSaveable {
-        mutableStateOf("")
-    }
-
     var mostrarError by rememberSaveable {
         mutableStateOf(false)
     }
@@ -50,7 +38,7 @@ fun CheckInScreen(
         "Trabajo",
         "Relaciones",
         "Familia",
-        "Sueño",
+        "Sueno",
         "Bienestar",
         "Otro"
     )
@@ -70,24 +58,24 @@ fun CheckInScreen(
         }
 
         Text(
-            text = "¿Cómo te sientes hoy?",
+            text = "¿Como te sientes hoy?",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF000E2E)
         )
 
         Text(
-            text = "Elige la opción que mejor represente " +
-                    "cómo te sientes en este momento.",
+            text = "Elige la opcion que mejor represente " +
+                    "como te sientes en este momento.",
             color = Color(0xFF536477)
         )
 
-        // Selección del estado de ánimo
+        // Seleccion del estado de animo conectada al ViewModel
         estados.forEach { estado ->
             FilterChip(
-                selected = animo == estado,
+                selected = viewModel.animo == estado,
                 onClick = {
-                    animo = estado
+                    viewModel.actualizarAnimo(estado)
                     mostrarError = false
                 },
                 label = {
@@ -97,10 +85,9 @@ fun CheckInScreen(
             )
         }
 
-        // Mensaje de validación
         if (mostrarError) {
             Text(
-                text = "Selecciona un estado de ánimo.",
+                text = "Selecciona un estado de animo.",
                 color = MaterialTheme.colorScheme.error
             )
         }
@@ -108,7 +95,7 @@ fun CheckInScreen(
         HorizontalDivider()
 
         Text(
-            text = "¿Con qué lo relacionas? (opcional)",
+            text = "¿Con que lo relacionas? (opcional)",
             fontWeight = FontWeight.SemiBold
         )
 
@@ -119,22 +106,20 @@ fun CheckInScreen(
         ) {
             categorias.forEach { opcion ->
                 FilterChip(
-                    selected = categoria == opcion,
+                    selected = viewModel.categoria == opcion,
                     onClick = {
-                        categoria =
-                            if (categoria == opcion) ""
-                            else opcion
+                        val nuevaCat = if (viewModel.categoria == opcion) "" else opcion
+                        viewModel.actualizarCategoria(nuevaCat)
                     },
                     label = { Text(opcion) }
                 )
             }
         }
 
-        // Nota personal opcional
         OutlinedTextField(
-            value = nota,
+            value = viewModel.nota,
             onValueChange = {
-                if (it.length <= 200) nota = it
+                if (it.length <= 200) viewModel.actualizarNota(it)
             },
             label = {
                 Text("Nota personal (opcional)")
@@ -143,7 +128,7 @@ fun CheckInScreen(
                 Text("Escribe algo si lo deseas...")
             },
             supportingText = {
-                Text("${nota.length}/200")
+                Text("${viewModel.nota.length}/200")
             },
             modifier = Modifier.fillMaxWidth(),
             minLines = 3,
@@ -152,23 +137,19 @@ fun CheckInScreen(
 
         Text(
             text = "Utiliza solamente datos ficticios " +
-                    "para esta demostración.",
+                    "para esta demostracion.",
             fontSize = 12.sp,
             color = Color(0xFF536477)
         )
 
         Button(
             onClick = {
-                val seleccionado = animo
-
-                if (seleccionado == null) {
+                if (viewModel.animo.isEmpty()) {
                     mostrarError = true
                 } else {
-                    onGuardar(
-                        seleccionado,
-                        categoria,
-                        nota
-                    )
+                    viewModel.guardarRegistro {
+                        onVolver()
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth(),
