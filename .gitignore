@@ -14,3 +14,6 @@
 .cxx
 local.properties
 /.idea/
+
+# Caché local del compilador Kotlin
+.kotlin/
