@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class HomeViewModel(private val registroDao: RegistroDao) : ViewModel() {
+class HomeViewModel(private val registroDao: RegistroDao, private val usuarioId: Int) : ViewModel() {
 
-    val historial: StateFlow<List<RegistroEntity>> = registroDao.obtenerHistorial()
+    val historial: StateFlow<List<RegistroEntity>> = registroDao.obtenerHistorial(usuarioId)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -22,7 +22,7 @@ class HomeViewModel(private val registroDao: RegistroDao) : ViewModel() {
     // Funcion para eliminar un registro llamando al DAO en segundo plano
     fun borrarRegistro(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            registroDao.eliminarRegistro(id)
+            registroDao.eliminarRegistro(id, usuarioId)
         }
     }
 

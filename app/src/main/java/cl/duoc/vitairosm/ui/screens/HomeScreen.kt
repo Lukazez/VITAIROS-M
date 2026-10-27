@@ -19,6 +19,8 @@ import cl.duoc.vitairosm.model.RegistroEntity
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    nombreUsuario: String,
+    fotoPerfil: @Composable () -> Unit,
     onVolver: () -> Unit,
     onRegistrar: () -> Unit,
     onIrAlChat: () -> Unit,
@@ -58,7 +60,7 @@ fun HomeScreen(
 
             // bienvenida al usuario
             Text(
-                text = "Hola, Usuario Demo",
+                text = "Hola, $nombreUsuario",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF000E2E)
@@ -69,6 +71,8 @@ fun HomeScreen(
                 fontSize = 16.sp,
                 color = Color(0xFF536477)
             )
+
+            fotoPerfil()
 
             // tarjeta con las estadisticas y resumen general
             Card(
@@ -304,7 +308,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Volver a bienvenida")
+                Text("Cerrar sesión")
             }
         }
 

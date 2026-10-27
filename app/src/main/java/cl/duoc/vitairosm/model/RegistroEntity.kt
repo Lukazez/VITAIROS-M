@@ -10,5 +10,6 @@ data class RegistroEntity(
     val animo: String,
     val categoria: String,
     val nota: String,
-    val fechaHora: Long = System.currentTimeMillis()
+    val fechaHora: Long = System.currentTimeMillis(),
+    val usuarioId: Int? = null
 )

@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class CheckInViewModel(private val registroDao: RegistroDao) : ViewModel() {
+class CheckInViewModel(private val registroDao: RegistroDao, private val usuarioId: Int) : ViewModel() {
 
     var animo by mutableStateOf("")
         private set
@@ -25,7 +25,7 @@ class CheckInViewModel(private val registroDao: RegistroDao) : ViewModel() {
     var nota by mutableStateOf("")
         private set
 
-    val historial: StateFlow<List<RegistroEntity>> = registroDao.obtenerHistorial()
+    val historial: StateFlow<List<RegistroEntity>> = registroDao.obtenerHistorial(usuarioId)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -50,7 +50,8 @@ class CheckInViewModel(private val registroDao: RegistroDao) : ViewModel() {
                 val registro = RegistroEntity(
                     animo = animo,
                     categoria = categoria,
-                    nota = nota
+                    nota = nota,
+                    usuarioId = usuarioId
                 )
 
                 registroDao.agregarRegistro(registro)

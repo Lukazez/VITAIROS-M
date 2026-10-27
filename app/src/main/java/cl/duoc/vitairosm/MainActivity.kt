@@ -28,8 +28,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.room.Room
+import cl.duoc.vitairosm.viewmodel.AuthViewModelFactory
 import cl.duoc.vitairosm.model.AppDatabase
+import cl.duoc.vitairosm.model.ProfilePhotoRepository
+import cl.duoc.vitairosm.ui.screens.ProfilePhotoCard
+import cl.duoc.vitairosm.viewmodel.ProfilePhotoViewModel
 import cl.duoc.vitairosm.ui.screens.AuthScreen
 import cl.duoc.vitairosm.ui.screens.CheckInScreen
 import cl.duoc.vitairosm.ui.screens.ChatScreen
@@ -63,6 +66,8 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation() {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val db = AppDatabase.getInstance(context)
+    val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(db.usuarioDao()))
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -94,23 +99,6 @@ fun AppNavigation() {
 
         // inicio de sesion
         composable("auth") {
-            val authViewModel: AuthViewModel = viewModel(
-                factory = object : ViewModelProvider.Factory {
-                    @Suppress("UNCHECKED_CAST")
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        val db = Room.databaseBuilder(
-                            context.applicationContext,
-                            AppDatabase::class.java,
-                            "vitairos_db"
-                        )
-                            .fallbackToDestructiveMigration()
-                            .build()
-
-                        return AuthViewModel(db.usuarioDao()) as T
-                    }
-                }
-            )
-
             AuthScreen(
                 viewModel = authViewModel,
                 onLoginExitoso = {
@@ -123,19 +111,22 @@ fun AppNavigation() {
 
         // pantalla principal o panel de control
         composable("home") {
+            val usuarioId = authViewModel.usuarioLogueado?.id
+            if (usuarioId == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate("auth") {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+                return@composable
+            }
             val homeViewModel: HomeViewModel = viewModel(
+                key = "home_$usuarioId",
                 factory = object : ViewModelProvider.Factory {
                     @Suppress("UNCHECKED_CAST")
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        val db = Room.databaseBuilder(
-                            context.applicationContext,
-                            AppDatabase::class.java,
-                            "vitairos_db"
-                        )
-                            .fallbackToDestructiveMigration()
-                            .build()
-
-                        return HomeViewModel(db.registroDao()) as T
+                        return HomeViewModel(db.registroDao(), usuarioId) as T
                     }
                 }
             )
@@ -145,9 +136,20 @@ fun AppNavigation() {
             }
 
             val historial by homeViewModel.historial.collectAsState()
+            val profileViewModel: ProfilePhotoViewModel = viewModel(
+                key = "profile_$usuarioId",
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                        ProfilePhotoViewModel(ProfilePhotoRepository(context.applicationContext), usuarioId) as T
+                }
+            )
 
             HomeScreen(
+                nombreUsuario = authViewModel.usuarioLogueado?.nombre.orEmpty(),
+                fotoPerfil = { ProfilePhotoCard(profileViewModel) },
                 onVolver = {
+                    authViewModel.cerrarSesion()
                     navController.navigate("auth") {
                         popUpTo("home") { inclusive = true }
                     }
@@ -163,19 +165,22 @@ fun AppNavigation() {
 
         // registrar el estado de animo
         composable("checkin") {
+            val usuarioId = authViewModel.usuarioLogueado?.id
+            if (usuarioId == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate("auth") {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+                return@composable
+            }
             val checkInViewModel: CheckInViewModel = viewModel(
+                key = "checkin_$usuarioId",
                 factory = object : ViewModelProvider.Factory {
                     @Suppress("UNCHECKED_CAST")
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        val db = Room.databaseBuilder(
-                            context.applicationContext,
-                            AppDatabase::class.java,
-                            "vitairos_db"
-                        )
-                            .fallbackToDestructiveMigration()
-                            .build()
-
-                        return CheckInViewModel(db.registroDao()) as T
+                        return CheckInViewModel(db.registroDao(), usuarioId) as T
                     }
                 }
             )

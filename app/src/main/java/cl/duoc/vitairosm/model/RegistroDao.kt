@@ -11,9 +11,9 @@ interface RegistroDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun agregarRegistro(registro: RegistroEntity): Long
 
-    @Query("SELECT * FROM registros_emocionales ORDER BY fechaHora DESC")
-    fun obtenerHistorial(): Flow<List<RegistroEntity>>
+    @Query("SELECT * FROM registros_emocionales WHERE usuarioId = :usuarioId ORDER BY fechaHora DESC")
+    fun obtenerHistorial(usuarioId: Int): Flow<List<RegistroEntity>>
 
-    @Query("DELETE FROM registros_emocionales WHERE id = :registroId")
-    fun eliminarRegistro(registroId: Int): Int
+    @Query("DELETE FROM registros_emocionales WHERE id = :registroId AND usuarioId = :usuarioId")
+    fun eliminarRegistro(registroId: Int, usuarioId: Int): Int
 }
