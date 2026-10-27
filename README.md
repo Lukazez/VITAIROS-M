@@ -40,37 +40,9 @@ Las rutas son relativas a `app/src/main/java/cl/duoc/vitairosm/`, excepto las pr
 
 ## Persistencia y recursos del dispositivo
 
-Room usa la base `vitairos_db`, versión **4**. La migración 2→3 conserva los registros antiguos sin dueño y los oculta de los historiales; no inventa a quién pertenecen. La migración 3→4 transforma las contraseñas existentes a PBKDF2-HMAC-SHA256 con sal aleatoria y 600.000 iteraciones. Mantiene cuentas, identificadores y registros, incluidas las cuentas antiguas con claves cortas. Las nuevas cuentas mantienen la regla de 8 caracteres. El hash no equivale a cifrar toda la base de datos.
-
 Las fotos quedan en el almacenamiento privado de la app, asociadas al ID de usuario. Solo se comparte con la cámara el archivo temporal de captura. No se solicita permiso propio de cámara ni almacenamiento porque la captura se delega a otra aplicación. Se corrige orientación y se recodifica sin copiar metadatos de ubicación. Las copias de seguridad automáticas y la transferencia de estos datos se excluyen en la configuración de Android.
 
 Las notificaciones muestran un texto genérico, sin datos del historial. La preferencia de recordatorios es del dispositivo, se conserva entre sesiones y se puede desactivar desde Inicio. WorkManager evita duplicar la tarea al activarla varias veces.
 
-## Verificación
+.
 
-En PowerShell, desde la raíz del proyecto:
-
-```powershell
-.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest :app:assembleDebugAndroidTest :app:lintDebug
-```
-
-Con un dispositivo de pruebas conectado:
-
-```powershell
-.\gradlew.bat :app:connectedDebugAndroidTest
-```
-
-El runner conectado puede necesitar descargar componentes adicionales de Gradle. Las pruebas también pueden ejecutarse instalando ambos APK y llamando a `androidx.test.runner.AndroidJUnitRunner`. Usar un dispositivo o una copia de pruebas para no mezclar cuentas de demostración con datos existentes. Los resultados y la guía de presentación se registran en [Evidencias DSY1105](docs/EVIDENCIAS_DSY1105.md).
-
-## Colaboración
-
-- **Lukazez:** estructura inicial, bienvenida y registro emocional; entrega de aislamiento de cuentas, validaciones, cámara y pruebas (`4df1bc5`, `2086082`).
-- **david-ps7:** Room, ViewModels y login; chat, catálogo y simulación de agenda (`8a22c9d`, `6deb40f`).
-- La entrega anterior se integró mediante [PR #1](https://github.com/Lukazez/VITAIROS-M/pull/1). La siguiente revisión debe conservar la historia de ambos integrantes y presentar los cambios nuevos mediante una rama y su PR.
-
-## Referencias técnicas
-
-- [Permisos mínimos y captura con una aplicación de cámara](https://developer.android.com/privacy-and-security/minimize-permission-requests).
-- [Compartir archivos con FileProvider](https://developer.android.com/reference/androidx/core/content/FileProvider).
-- [Trabajo periódico y sus restricciones](https://developer.android.com/develop/background-work/background-tasks/persistent/getting-started/define-work).
-- [Almacenamiento de contraseñas: OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html).
