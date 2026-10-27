@@ -1,5 +1,8 @@
 package cl.duoc.vitairosm.viewmodel
 
+import androidx.compose.runtime.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.withContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.duoc.vitairosm.model.RegistroDao
@@ -19,25 +22,17 @@ class HomeViewModel(private val registroDao: RegistroDao, private val usuarioId:
             initialValue = emptyList()
         )
 
-    // Funcion para eliminar un registro llamando al DAO en segundo plano
+    var mensajeError by mutableStateOf<String?>(null); private set
+    var borrando by mutableStateOf(false); private set
     fun borrarRegistro(id: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            registroDao.eliminarRegistro(id, usuarioId)
+        if (borrando) return
+        borrando = true
+        mensajeError = null
+        viewModelScope.launch {
+            try { withContext(Dispatchers.IO) { registroDao.eliminarRegistro(id, usuarioId) } }
+            catch (e: CancellationException) { throw e }
+            catch (_: Exception) { mensajeError = "No se pudo borrar el registro. Intenta nuevamente." }
+            finally { borrando = false }
         }
     }
-
-    fun programarRecordatorioDiario(context: android.content.Context) {
-        val constraints = androidx.work.Constraints.Builder()
-            .setRequiredNetworkType(androidx.work.NetworkType.NOT_REQUIRED)
-            .build()
-
-        val solicitudUnica =
-            androidx.work.OneTimeWorkRequestBuilder<cl.duoc.vitairosm.worker.RecordatorioWorker>()
-                .setInitialDelay(5, java.util.concurrent.TimeUnit.SECONDS)
-                .setConstraints(constraints)
-                .build()
-
-        androidx.work.WorkManager.getInstance(context).enqueue(solicitudUnica)
-    }
-
 }

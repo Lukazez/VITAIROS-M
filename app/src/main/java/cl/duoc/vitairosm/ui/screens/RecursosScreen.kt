@@ -21,8 +21,8 @@ fun RecursosScreen(
     onVolver: () -> Unit
 ) {
     val listaRecursos = listOf(
-        Recurso("Respiracion consciente", "Dedica 5 minutos al dia a inhalar profundamente y exhalar con calma para reducir la ansiedad.", "Ansiedad"),
-        Recurso("Higiene del sueno", "Evita pantallas una hora antes de dormir y manten un horario constante para descansar mejor.", "Descanso"),
+        Recurso("Respiración consciente", "Dedica 5 minutos al dia a inhalar profundamente y exhalar con calma para reducir la ansiedad.", "Ansiedad"),
+        Recurso("Higiene del sueño", "Evita pantallas una hora antes de dormir y manten un horario constante para descansar mejor.", "Descanso"),
         Recurso("Pausas activas", "Estira tus brazos y piernas cada dos horas si pasas mucho tiempo estudiando o trabajando frente al computador.", "Bienestar"),
         Recurso("Expresa lo que sientes", "Escribir tus emociones en un registro o hablar con alguien de confianza ayuda a liberar carga mental.", "Emocional")
     )
@@ -47,6 +47,7 @@ fun RecursosScreen(
                 Text(
                     text = "Biblioteca de recursos",
                     fontSize = 24.sp,
+                    modifier = Modifier.weight(1f),
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF000E2E)
                 )
@@ -56,7 +57,7 @@ fun RecursosScreen(
             }
 
             Text(
-                text = "Guias y consejos rapidos para tu bienestar mental",
+                text = "Guías y consejos rápidos para tu bienestar mental",
                 fontSize = 14.sp,
                 color = Color(0xFF536477)
             )

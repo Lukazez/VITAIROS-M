@@ -1,14 +1,9 @@
 package cl.duoc.vitairosm
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -21,7 +16,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,6 +27,8 @@ import cl.duoc.vitairosm.model.AppDatabase
 import cl.duoc.vitairosm.model.ProfilePhotoRepository
 import cl.duoc.vitairosm.ui.screens.ProfilePhotoCard
 import cl.duoc.vitairosm.viewmodel.ProfilePhotoViewModel
+import cl.duoc.vitairosm.ui.screens.ReminderCard
+import cl.duoc.vitairosm.ui.screens.WelcomeScreen
 import cl.duoc.vitairosm.ui.screens.AuthScreen
 import cl.duoc.vitairosm.ui.screens.CheckInScreen
 import cl.duoc.vitairosm.ui.screens.ChatScreen
@@ -69,33 +65,21 @@ fun AppNavigation() {
     val db = AppDatabase.getInstance(context)
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(db.usuarioDao()))
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-    }
-
-    // permiso para las notificaciones si el telefono es moderno
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val permissionCheck = ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            )
-            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        }
-    }
-
     // mapa de navegacion con animaciones suaves de entrada y salida
     NavHost(
         navController = navController,
-        startDestination = "auth",
+        startDestination = "welcome",
         enterTransition = { fadeIn(animationSpec = tween(400)) },
         exitTransition = { fadeOut(animationSpec = tween(300)) },
         popEnterTransition = { fadeIn(animationSpec = tween(400)) },
         popExitTransition = { fadeOut(animationSpec = tween(300)) }
     ) {
+
+        composable("welcome") {
+            WelcomeScreen {
+                navController.navigate("auth") { popUpTo("welcome") { inclusive = true } }
+            }
+        }
 
         // inicio de sesion
         composable("auth") {
@@ -131,9 +115,6 @@ fun AppNavigation() {
                 }
             )
 
-            LaunchedEffect(Unit) {
-                homeViewModel.programarRecordatorioDiario(context)
-            }
 
             val historial by homeViewModel.historial.collectAsState()
             val profileViewModel: ProfilePhotoViewModel = viewModel(
@@ -148,6 +129,9 @@ fun AppNavigation() {
             HomeScreen(
                 nombreUsuario = authViewModel.usuarioLogueado?.nombre.orEmpty(),
                 fotoPerfil = { ProfilePhotoCard(profileViewModel) },
+                recordatorio = { ReminderCard() },
+                mensajeError = homeViewModel.mensajeError,
+                borrando = homeViewModel.borrando,
                 onVolver = {
                     authViewModel.cerrarSesion()
                     navController.navigate("auth") {

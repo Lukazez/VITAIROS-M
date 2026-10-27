@@ -24,14 +24,14 @@ fun ChatScreen(
     var mensajes by remember {
         mutableStateOf(
             listOf(
-                MensajeChat("Hola, soy tu asistente de orientacion de VITAIROS-M. ¿En que te puedo ayudar hoy?", false)
+                MensajeChat("Hola. Este chat de demostración ofrece respuestas predefinidas de orientación general. Elige una pregunta para comenzar.", false)
             )
         )
     }
 
     // preguntas predefinidas para que el usuario elija rapidamente
     val opcionesPreguntas = listOf(
-        "¿Como puedo manejar el estrés?",
+        "¿Cómo puedo manejar el estrés?",
         "Tengo problemas para dormir",
         "¿Que hago si me siento triste?",
         "Consejos para mantener la calma"
@@ -56,8 +56,9 @@ fun ChatScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Chat de orientacion",
+                    text = "Chat de orientación",
                     fontSize = 24.sp,
+                    modifier = Modifier.weight(1f),
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF000E2E)
                 )
@@ -127,7 +128,7 @@ fun ChatScreen(
 // Funcion que retorna respuestas predefinidas segun la seleccion
 fun obtenerRespuestaPredefinida(pregunta: String): String {
     return when (pregunta) {
-        "¿Como puedo manejar el estrés?" -> "Intenta respirar hondo cuatro segundos, mantener cuatro y exhalar lentamente. Pausas breves ayudan mucho."
+        "¿Cómo puedo manejar el estrés?" -> "Intenta respirar hondo cuatro segundos, mantener cuatro y exhalar lentamente. Pausas breves ayudan mucho."
         "Tengo problemas para dormir" -> "Evita pantallas una hora antes de acostarte y mantén tu habitacion oscura y fresca."
         "¿Que hago si me siento triste?" -> "Es valido sentirse asi. Conversa con alguien de confianza o escribe lo que sientes en tu registro."
         "Consejos para mantener la calma" -> "Concentrate en el momento presente, estira tus brazos y bebe un vaso con agua."

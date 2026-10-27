@@ -16,7 +16,4 @@ interface UsuarioDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun registrarUsuario(usuario: UsuarioEntity): Long
 
-    @JvmSuppressWildcards
-    @Query("SELECT * FROM usuarios WHERE correo = :correo AND contrasena = :contrasena")
-    suspend fun iniciarSesion(correo: String, contrasena: String): UsuarioEntity?
 }

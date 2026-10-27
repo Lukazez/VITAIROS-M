@@ -1,68 +1,43 @@
 package cl.duoc.vitairosm.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.duoc.vitairosm.model.RegistroDao
 import cl.duoc.vitairosm.model.RegistroEntity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 class CheckInViewModel(private val registroDao: RegistroDao, private val usuarioId: Int) : ViewModel() {
+    var animo by mutableStateOf(""); private set
+    var categoria by mutableStateOf(""); private set
+    var nota by mutableStateOf(""); private set
+    var errorAnimo by mutableStateOf<String?>(null); private set
+    var errorCategoria by mutableStateOf<String?>(null); private set
+    var errorNota by mutableStateOf<String?>(null); private set
+    var mensajeError by mutableStateOf<String?>(null); private set
+    var guardando by mutableStateOf(false); private set
 
-    var animo by mutableStateOf("")
-        private set
-
-    var categoria by mutableStateOf("")
-        private set
-
-    var nota by mutableStateOf("")
-        private set
-
-    val historial: StateFlow<List<RegistroEntity>> = registroDao.obtenerHistorial(usuarioId)
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-    fun actualizarAnimo(nuevoAnimo: String) {
-        animo = nuevoAnimo
-    }
-
-    fun actualizarCategoria(nuevaCategoria: String) {
-        categoria = nuevaCategoria
-    }
-
-    fun actualizarNota(nuevaNota: String) {
-        nota = nuevaNota
-    }
+    fun actualizarAnimo(valor: String) { if (!guardando) { animo = valor; errorAnimo = CheckInValidation.animo(valor); mensajeError = null } }
+    fun actualizarCategoria(valor: String) { if (!guardando) { categoria = valor; errorCategoria = CheckInValidation.categoria(valor); mensajeError = null } }
+    fun actualizarNota(valor: String) { if (!guardando) { nota = valor; errorNota = CheckInValidation.nota(valor); mensajeError = null } }
 
     fun guardarRegistro(onExito: () -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (animo.isNotEmpty()) {
-                val registro = RegistroEntity(
-                    animo = animo,
-                    categoria = categoria,
-                    nota = nota,
-                    usuarioId = usuarioId
-                )
-
-                registroDao.agregarRegistro(registro)
-
-                withContext(Dispatchers.Main) {
-                    animo = ""
-                    categoria = ""
-                    nota = ""
-                    onExito()
-                }
-            }
+        if (guardando) return
+        errorAnimo = CheckInValidation.animo(animo)
+        errorCategoria = CheckInValidation.categoria(categoria)
+        errorNota = CheckInValidation.nota(nota)
+        if (errorAnimo != null || errorCategoria != null || errorNota != null) return
+        val registro = RegistroEntity(animo = animo, categoria = categoria, nota = nota.trim(), usuarioId = usuarioId)
+        guardando = true
+        mensajeError = null
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) { registroDao.agregarRegistro(registro) }
+                animo = ""; categoria = ""; nota = ""
+                onExito()
+            } catch (e: CancellationException) { throw e }
+            catch (_: Exception) { mensajeError = "No se pudo guardar. Tus datos siguen aquí; intenta nuevamente." }
+            finally { guardando = false }
         }
     }
 }

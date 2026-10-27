@@ -7,10 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.duoc.vitairosm.model.UsuarioDao
 import cl.duoc.vitairosm.model.UsuarioEntity
+import cl.duoc.vitairosm.model.UsuarioRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 class AuthViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
+    private val repository = UsuarioRepository(usuarioDao)
     var correo by mutableStateOf("")
         private set
     var contrasena by mutableStateOf("")
@@ -63,7 +65,10 @@ class AuthViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
                 if (usuarioDao.buscarPorCorreo(nuevo.correo) != null) {
                     errorCorreo = "El correo ya está registrado"
                 } else {
-                    usuarioDao.registrarUsuario(nuevo)
+                    val protectedUser = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                        nuevo.copy(contrasena = cl.duoc.vitairosm.model.PasswordHasher.hash(nuevo.contrasena))
+                    }
+                    usuarioDao.registrarUsuario(protectedUser)
                     contrasena = ""
                     mensajeExito = "Cuenta creada. Ahora inicia sesión."
                 }
@@ -84,7 +89,7 @@ class AuthViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
         procesando = true
         viewModelScope.launch {
             try {
-                val usuario = usuarioDao.iniciarSesion(correoIngresado, claveIngresada)
+                val usuario = repository.iniciarSesion(correoIngresado, claveIngresada)
                 if (usuario != null) {
                     contrasena = ""
                     usuarioLogueado = usuario

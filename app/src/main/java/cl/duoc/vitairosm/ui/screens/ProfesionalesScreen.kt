@@ -22,7 +22,7 @@ fun ProfesionalesScreen(
 ) {
     val listaProfesionales = listOf(
         Profesional("Dra. Maria Gomez", "Psicologia Clinica", "Lunes a Viernes - 10:00 hrs"),
-        Profesional("Lic. Carlos Perez", "Orientacion Emocional", "Martes y Jueves - 15:00 hrs"),
+        Profesional("Lic. Carlos Perez", "Orientación Emocional", "Martes y Jueves - 15:00 hrs"),
         Profesional("Dra. Ana Fernandez", "Bienestar y Mindfulness", "Lunes, Miercoles y Viernes - 11:00 hrs")
     )
 
@@ -47,8 +47,9 @@ fun ProfesionalesScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Catalogo de profesionales",
+                    text = "Catálogo de profesionales",
                     fontSize = 24.sp,
+                    modifier = Modifier.weight(1f),
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF000E2E)
                 )
@@ -114,8 +115,8 @@ fun ProfesionalesScreen(
         if (mostrarConfirmacion && profesionalSeleccionado != null) {
             AlertDialog(
                 onDismissRequest = { mostrarConfirmacion = false },
-                title = { Text("Cita agendada con exito") },
-                text = { Text("Has solicitado una cita con ${profesionalSeleccionado?.nombre} (${profesionalSeleccionado?.especialidad}). Te contactaremos pronto.") },
+                title = { Text("Simulación completada") },
+                text = { Text("Has simulado una solicitud con ${profesionalSeleccionado?.nombre} (${profesionalSeleccionado?.especialidad}). No se ha reservado una hora ni contactado al profesional.") },
                 confirmButton = {
                     TextButton(
                         onClick = { mostrarConfirmacion = false }
