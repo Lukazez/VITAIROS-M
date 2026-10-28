@@ -46,3 +46,4 @@ Las notificaciones muestran un texto genérico, sin datos del historial. La pref
 
 .
 
+Link trello: https://trello.com/invite/b/6adea38be83b0cc61cab2dff/ATTI88b650a4dac4d6aa61f1d3b5f4bac650F15ED530/vitairos-m-dsy1105
