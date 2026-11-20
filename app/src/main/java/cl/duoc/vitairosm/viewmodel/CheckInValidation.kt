@@ -1,7 +1,7 @@
 package cl.duoc.vitairosm.viewmodel
 
 object CheckInValidation {
-    const val MAX_NOTE = 200
+    const val MAX_NOTE = 600
     val animos = listOf("Muy desanimado", "Desanimado", "Neutral", "Bien", "Muy bien")
     val categorias = listOf("Estudios", "Trabajo", "Relaciones", "Familia", "Sueño", "Bienestar", "Otro")
     fun animo(value: String): String? = if (value in animos) null else "Selecciona un estado de ánimo."

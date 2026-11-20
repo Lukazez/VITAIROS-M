@@ -1,29 +1,34 @@
 package cl.duoc.vitairosm.ui.screens
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cl.duoc.vitairosm.R
 import cl.duoc.vitairosm.model.RegistroEntity
 
-// aqui armamos la pantalla principal con el resumen, los botones y el historial
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    nombreUsuario: String,
-    fotoPerfil: @Composable () -> Unit,
-    recordatorio: @Composable () -> Unit,
-    mensajeError: String?,
-    borrando: Boolean,
+    nombreUsuario: String = "Usuario Demo",
+    fotoPerfil: (@Composable () -> Unit)? = null,
+    recordatorio: (@Composable () -> Unit)? = null,
+    mensajeError: String? = null,
+    borrando: Boolean = false,
     onVolver: () -> Unit,
     onRegistrar: () -> Unit,
     onIrAlChat: () -> Unit,
@@ -36,9 +41,15 @@ fun HomeScreen(
 
     var categoriaSeleccionada by remember { mutableStateOf("Todas") }
 
-    val categoriasDisponibles = listOf("Todas") + historialRegistros.map { it.categoria }.distinct().filter { it.isNotBlank() }
+    val categoriasDisponibles = listOf("Todas") + historialRegistros
+        .map { it.categoria }
+        .distinct()
+        .filter { it.isNotBlank() }
+
     LaunchedEffect(categoriasDisponibles) {
-        if (categoriaSeleccionada !in categoriasDisponibles) categoriaSeleccionada = "Todas"
+        if (categoriaSeleccionada !in categoriasDisponibles) {
+            categoriaSeleccionada = "Todas"
+        }
     }
 
     val historialFiltrado = if (categoriaSeleccionada == "Todas") {
@@ -60,29 +71,57 @@ fun HomeScreen(
                 .background(Color(0xFFF2F8FB))
                 .safeDrawingPadding()
                 .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFE1ECF2))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.logo_vitairos),
+                        contentDescription = "Logo VITAIROS-M",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
 
-            // bienvenida al usuario
             Text(
                 text = "Hola, $nombreUsuario",
-                fontSize = 28.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF000E2E)
             )
 
             Text(
                 text = "Tu espacio de bienestar",
-                fontSize = 16.sp,
+                fontSize = 15.sp,
                 color = Color(0xFF536477)
             )
 
-            fotoPerfil()
-            FormFeedback(mensajeError)
+            fotoPerfil?.invoke()
 
-            // tarjeta con las estadisticas y resumen general
+            if (!mensajeError.isNullOrBlank()) {
+                Text(
+                    text = mensajeError,
+                    fontSize = 13.sp,
+                    color = Color(0xFFBA1A1A)
+                )
+            }
+
             Card(
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFFE8F1F5)
@@ -107,7 +146,7 @@ fun HomeScreen(
                     if (conteoAnimos.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Frecuencia por ánimo:",
+                            text = "Frecuencia por animo:",
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 14.sp,
                             color = Color(0xFF000E2E)
@@ -123,8 +162,10 @@ fun HomeScreen(
                 }
             }
 
-            // tarjeta con los botones para navegar a las demas funciones
+            recordatorio?.invoke()
+
             Card(
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = Color.White
@@ -135,72 +176,81 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "¿Cómo te sientes hoy?",
+                        text = "¿Como te sientes hoy?",
                         fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF000E2E)
                     )
 
                     Text(
                         text = if (ultimoRegistro == null) {
-                            "Todavía no tienes registros en esta demostración."
+                            "Todavia no tienes registros en esta demostracion."
                         } else {
-                            "Último registro: ${ultimoRegistro.animo}"
-                        }
+                            "Ultimo registro: ${ultimoRegistro.animo}"
+                        },
+                        color = Color(0xFF536477)
                     )
 
                     if (!ultimoRegistro?.categoria.isNullOrBlank()) {
-                        Text("Categoría: ${ultimoRegistro?.categoria}")
+                        Text(
+                            text = "Categoria: ${ultimoRegistro.categoria}",
+                            color = Color(0xFF536477)
+                        )
                     }
 
                     if (!ultimoRegistro?.nota.isNullOrBlank()) {
-                        Text("Nota: ${ultimoRegistro?.nota}")
+                        Text(
+                            text = "Nota: ${ultimoRegistro.nota}",
+                            color = Color(0xFF536477)
+                        )
                     }
 
-                    // boton para ir al formulario de registro
                     Button(
                         onClick = onRegistrar,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF005B70))
                     ) {
-                        Text("Registrar mi ánimo", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text("Registrar mi animo", fontSize = 15.sp, fontWeight = FontWeight.Bold)
                     }
 
-                    // boton para abrir el chat
                     Button(
                         onClick = onIrAlChat,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(46.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007F9E))
                     ) {
-                        Text("Abrir chat de orientación", fontSize = 15.sp)
+                        Text("Abrir chat de orientacion", fontSize = 14.sp)
                     }
 
-                    // boton para ver la biblioteca
                     Button(
                         onClick = onIrARecursos,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(46.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007F9E))
                     ) {
-                        Text("Ver biblioteca de recursos", fontSize = 15.sp)
+                        Text("Ver biblioteca de recursos", fontSize = 14.sp)
                     }
 
-                    // boton para ver profesionales
                     Button(
                         onClick = onIrAProfesionales,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(46.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007F9E))
                     ) {
-                        Text("Ver catálogo de profesionales", fontSize = 15.sp)
+                        Text("Ver catalogo de profesionales", fontSize = 14.sp)
                     }
                 }
             }
 
-            recordatorio()
-
-            // seccion del historial donde se muestran los registros guardados y los filtros
             if (historialRegistros.isNotEmpty()) {
                 Text(
                     text = "Historial de registros",
@@ -226,7 +276,7 @@ fun HomeScreen(
 
                 if (historialFiltrado.isEmpty()) {
                     Text(
-                        text = "No hay registros para esta categoría.",
+                        text = "No hay registros para esta categoria.",
                         fontSize = 14.sp,
                         color = Color(0xFF536477)
                     )
@@ -250,13 +300,13 @@ fun HomeScreen(
                                     verticalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     Text(
-                                        text = "Ánimo: ${registro.animo}",
+                                        text = "Animo: ${registro.animo}",
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF007F9E)
                                     )
                                     if (registro.categoria.isNotBlank()) {
                                         Text(
-                                            text = "Categoría: ${registro.categoria}",
+                                            text = "Categoria: ${registro.categoria}",
                                             color = Color(0xFF536477)
                                         )
                                     }
@@ -268,7 +318,6 @@ fun HomeScreen(
                                     }
                                 }
 
-                                // boton para borrar un registro
                                 TextButton(
                                     enabled = !borrando,
                                     onClick = {
@@ -276,7 +325,7 @@ fun HomeScreen(
                                         mostrarDialogo = true
                                     }
                                 ) {
-                                    Text("Borrar", color = Color.Red)
+                                    Text("Borrar", color = Color(0xFFBA1A1A))
                                 }
                             }
                         }
@@ -285,6 +334,7 @@ fun HomeScreen(
             }
 
             Card(
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFFDDF6F0)
@@ -295,39 +345,40 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Tu próximo paso",
+                        text = "Tu proximo paso",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF000E2E)
                     )
 
                     Text(
-                        text = "Dedica un momento a reconocer cómo te sientes hoy."
+                        text = "Dedica un momento a reconocer como te sientes hoy."
                     )
                 }
             }
 
             Text(
-                text = "VITAIROS-M no reemplaza la atención profesional.",
+                text = "VITAIROS-M no reemplaza la atencion profesional.",
                 fontSize = 13.sp,
                 color = Color(0xFF536477)
             )
 
             Button(
                 onClick = onVolver,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(46.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Cerrar sesión")
+                Text("Volver a bienvenida")
             }
         }
 
-        // ventana para confirmar si se desea borrar un registro
         if (mostrarDialogo && registroIdAEliminar != null) {
             AlertDialog(
                 onDismissRequest = { mostrarDialogo = false },
                 title = { Text("Eliminar registro") },
-                text = { Text("¿Estás seguro de que deseas eliminar este registro del historial?") },
+                text = { Text("¿Estas seguro de que deseas eliminar este registro del historial?") },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -338,7 +389,7 @@ fun HomeScreen(
                             registroIdAEliminar = null
                         }
                     ) {
-                        Text("Eliminar", color = Color.Red)
+                        Text("Eliminar", color = Color(0xFFBA1A1A))
                     }
                 },
                 dismissButton = {
